@@ -9,24 +9,12 @@ def test_strategy_deployment(strategist, gov, vault, TestStrategy):
     assert strategy.keeper() == strategist
     assert strategy.want() == vault.token()
     assert strategy.reserve() == 0
-    assert strategy.performanceFee() == 500
     assert not strategy.emergencyExit()
 
     assert strategy.expectedReturn() == 0
-    assert not strategy.harvestTrigger(10 ** 18)
-    assert not strategy.tendTrigger(10 ** 18)
-
-
-def test_vault_setPerformanceFee(strategy, gov, strategist, rando):
-    # Only governance can set this param
-    with brownie.reverts():
-        strategy.setPerformanceFee(1000, {"from": rando})
-    with brownie.reverts():
-        strategy.setPerformanceFee(1000, {"from": strategist})
-    assert strategy.performanceFee() != 1000
-
-    strategy.setPerformanceFee(1000, {"from": gov})
-    assert strategy.performanceFee() == 1000
+    # Should not trigger until it is approved
+    assert not strategy.harvestTrigger(0)
+    assert not strategy.tendTrigger(0)
 
 
 def test_vault_setStrategist(strategy, gov, strategist, rando):
