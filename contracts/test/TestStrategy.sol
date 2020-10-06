@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
-import { BaseStrategy } from "../BaseStrategy.sol";
+import { BaseStrategy, StrategyParams } from "../BaseStrategy.sol";
 
 /*
  * This Strategy serves as both a mock Strategy for testing, and an example
@@ -23,7 +24,12 @@ contract TestStrategy is BaseStrategy {
         override
         returns (bool)
     {
-        return gasCost < 0.1 ether && want.balanceOf(address(this)) == reserve;
+        StrategyParams memory params = vault.strategies(address(this));
+        return (
+            (params.debtLimit > 0 || params.totalDebt > 0)
+            && want.balanceOf(address(this)) == reserve
+            && gasCost < 0.1 ether
+        );
     }
 
     function harvestTrigger(uint256 gasCost)
@@ -32,16 +38,21 @@ contract TestStrategy is BaseStrategy {
         override
         returns (bool)
     {
-        return gasCost < want.balanceOf(address(this)).sub(reserve);
+        StrategyParams memory params = vault.strategies(address(this));
+        return (
+            (params.debtLimit > 0 || params.totalDebt > 0)
+            && want.balanceOf(address(this)) > reserve
+            && gasCost < 0.1 ether
+        );
     }
 
     function expectedReturn()
         public
         view
         override
-        returns (uint256 er)
+        returns (uint256)
     {
-        (,,,,, er) = vault.strategies(address(this));
+        return vault.expectedReturn();
     }
 
     uint preparedReturn = 0;

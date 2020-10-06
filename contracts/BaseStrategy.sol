@@ -1,8 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.6.0 <0.7.0;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelinV3/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelinV3/contracts/math/SafeMath.sol";
+
+struct StrategyParams {
+    uint256 activation;
+    uint256 debtLimit;
+    uint256 rateLimit;
+    uint256 lastSync;
+    uint256 totalDebt;
+    uint256 totalReturns;
+}
 
 interface VaultAPI {
     function token() external view returns (address);
@@ -10,14 +20,7 @@ interface VaultAPI {
     function strategies(address _strategy)
         external
         view
-        returns (
-            uint256 activation,
-            uint256 debtLimit,
-            uint256 rateLimit,
-            uint256 lastSync,
-            uint256 totalDebt,
-            uint256 totalReturns
-        );
+        returns (StrategyParams memory);
 
     /*
      * View how much the Vault would increase this strategy's borrow limit,
